@@ -11,6 +11,6 @@ namespace SindikatAnkete.Entity
         public int Id { get; set; }
         [Required]
         public string VrstaPitanja { get; set; }
-        //public ICollection<PitanjeEntity>Pitanja { get; set; } navodno ne triba
+        //public ICollection<PitanjeEntity>Pitanja { get; set; } //navodno ne triba
     }
 }

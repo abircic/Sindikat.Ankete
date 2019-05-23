@@ -13,6 +13,7 @@ namespace SindikatAnkete.Entity
         public string TekstPitanja { get; set; }
         public AnketaEntity Anketa { get; set; }
         public TipPitanjaEntity TipPitanja { get; set; }
+        public ICollection<OdgovorEntity> Odgovori {get; set;}
         public ICollection<PonudeniOdgovorEntity> PonudeniOdgovori { get; set;}
 
     }

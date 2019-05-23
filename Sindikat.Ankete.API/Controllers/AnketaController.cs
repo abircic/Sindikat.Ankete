@@ -34,6 +34,7 @@ namespace Sindikat.Ankete.API.Controllers
             var anketa = from a in _context.Ankete where a.status.Equals(true)
                          select new AnketaMenuDTO()
                          {
+                             Id = a.Id,
                              Naziv = a.Naziv,
                              Opis = a.Opis,
                              VrijemeKreiranja = a.VrijemeKreiranja
@@ -58,8 +59,10 @@ namespace Sindikat.Ankete.API.Controllers
             //            join o in _context.PonudeniOdgovori on p.Id equals o.Pitanje.Id
             //            select new { a.Id, a.Naziv, a.Opis, p.TekstPitanja, o.Pitanje.PonudeniOdgovori };
             ////            select new { a.Id, a.Naziv, a.Opis, p.TekstPitanja, p.PonudeniOdgovori};
-            //            select new { a.Id, a.Naziv, a.Opis, p.TekstPitanja, o.Pitanje.PonudeniOdgovori};
+            //           select new { a.Id, a.Naziv, a.Opis, p.TekstPitanja, o.Pitanje.PonudeniOdgovori};
             //var query = _context.Ankete.Where(a => a.Id == id).Include(p => p.Pitanja);
+
+          
 
             if (query == null)
             {
@@ -72,32 +75,13 @@ namespace Sindikat.Ankete.API.Controllers
 
         // PUT: api/Anketa/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAnketaEntity(int id, AnketaEntity anketaEntity)
+        public async Task<IActionResult> PutAnketaEntity(int id, bool status)
         {
-            if (id != anketaEntity.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(anketaEntity).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!AnketaEntityExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            var result = await _context.Ankete.FindAsync(id);
+            result.status = status;
+            _context.Ankete.Update(result);
+            _context.SaveChanges();
+            return Ok(result);
         }
 
         // POST: api/Anketa
@@ -105,6 +89,7 @@ namespace Sindikat.Ankete.API.Controllers
         public async Task<ActionResult<AnketaEntity>> PostAnketaEntity(AnketaDTO anketaDTO)
         {
             AnketaEntity anketa = new AnketaEntity();
+            anketa.status = true;
             anketa.Naziv = anketaDTO.Naziv;
             anketa.VrijemeKreiranja = anketaDTO.VrijemeKreiranja;
             anketa.Opis = anketaDTO.Opis;
@@ -114,7 +99,18 @@ namespace Sindikat.Ankete.API.Controllers
                 var p = new PitanjeEntity();
                 p.TekstPitanja = pitanje.TekstPitanja;
                 p.TipPitanja = new TipPitanjaEntity();
-                p.TipPitanja.VrstaPitanja = pitanje.VrstaPitanja;
+
+                var query = _context.TipoviPitanja.SingleOrDefault(tip => tip.VrstaPitanja == pitanje.VrstaPitanja);
+                if(query==null)
+                {
+                    p.TipPitanja.VrstaPitanja = pitanje.VrstaPitanja;
+                }
+                else
+                {
+                    p.TipPitanja.VrstaPitanja = query.VrstaPitanja;
+                    p.TipPitanja.Id = query.Id;
+                }
+
                 p.PonudeniOdgovori = new List<PonudeniOdgovorEntity>();
                 foreach (var odgovor in pitanje.ponudeniOdgovori)
                 {
@@ -152,5 +148,24 @@ namespace Sindikat.Ankete.API.Controllers
         {
             return _context.Ankete.Any(e => e.Id == id);
         }
+        // POST: api/Anketa
+        //[HttpPost]
+        //public async void PostIspuniAnketu(IspuniAnketuDTO ispuniAnketu)
+        //{
+        //    PopunjenaAnketaEntity popunjenaAnketa = new PopunjenaAnketaEntity();
+        //    popunjenaAnketa.Anketa.Id = ispuniAnketu.AnketaId;
+        //    popunjenaAnketa.KorisnikId = ispuniAnketu.KorisnikId;
+        //    List<OdgovorEntity> listaOdgovora = new List<OdgovorEntity>();
+
+        //    foreach (var odgovor in ispuniAnketu.Odgovor)
+        //    {
+        //        var od = new OdgovorEntity();
+        //        od.OdgovorPitanja = odgovor.OdgovorNaPitanje;
+
+
+        //    }
+        //    popunjenaAnketa.Odgovori = listaOdgovora;
+        //}
     }
+
 }

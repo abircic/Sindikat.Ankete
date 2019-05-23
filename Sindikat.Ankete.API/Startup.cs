@@ -72,10 +72,12 @@ namespace Sindikat.Ankete.API
                 });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc().AddJsonOptions(Options => 
+            Options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
+                c.SwaggerDoc("SindikatAnkete", new Info { Title = "SINDIKAT ANKETE", Version = "v1" });
             });
 
             builder.Populate(services);
@@ -93,7 +95,7 @@ namespace Sindikat.Ankete.API
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.SwaggerEndpoint("/swagger/SindikatAnkete/swagger.json", "Not enabled");
             });
 
             if (env.IsDevelopment())

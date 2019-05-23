@@ -11,6 +11,7 @@ namespace SindikatAnkete.Entity
         public int Id { get; set; }
         [Required]
         public string OdgovorPitanja { get; set; }
+        public PitanjeEntity Pitanje { get; set; }
         public PopunjenaAnketaEntity PopunjenaAnketa { get; set; }
     }
 }

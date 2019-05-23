@@ -10,8 +10,8 @@ using Sindikat.Ankete.Persistence;
 namespace Sindikat.Ankete.Persistence.Migrations
 {
     [DbContext(typeof(AnketeDbContext))]
-    [Migration("20190521070954_Initial")]
-    partial class Initial
+    [Migration("20190523185051_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -50,9 +50,13 @@ namespace Sindikat.Ankete.Persistence.Migrations
                     b.Property<string>("OdgovorPitanja")
                         .IsRequired();
 
+                    b.Property<int?>("PitanjeId");
+
                     b.Property<int?>("PopunjenaAnketaId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PitanjeId");
 
                     b.HasIndex("PopunjenaAnketaId");
 
@@ -105,14 +109,10 @@ namespace Sindikat.Ankete.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("AnketaId");
-
                     b.Property<string>("KorisnikId")
                         .IsRequired();
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AnketaId");
 
                     b.ToTable("PopunjeneAnkete");
                 });
@@ -133,6 +133,10 @@ namespace Sindikat.Ankete.Persistence.Migrations
 
             modelBuilder.Entity("SindikatAnkete.Entity.OdgovorEntity", b =>
                 {
+                    b.HasOne("SindikatAnkete.Entity.PitanjeEntity", "Pitanje")
+                        .WithMany("Odgovori")
+                        .HasForeignKey("PitanjeId");
+
                     b.HasOne("SindikatAnkete.Entity.PopunjenaAnketaEntity", "PopunjenaAnketa")
                         .WithMany("Odgovori")
                         .HasForeignKey("PopunjenaAnketaId");
@@ -154,13 +158,6 @@ namespace Sindikat.Ankete.Persistence.Migrations
                     b.HasOne("SindikatAnkete.Entity.PitanjeEntity", "Pitanje")
                         .WithMany("PonudeniOdgovori")
                         .HasForeignKey("PitanjeId");
-                });
-
-            modelBuilder.Entity("SindikatAnkete.Entity.PopunjenaAnketaEntity", b =>
-                {
-                    b.HasOne("SindikatAnkete.Entity.AnketaEntity", "Anketa")
-                        .WithMany("PopunjeneAnkete")
-                        .HasForeignKey("AnketaId");
                 });
 #pragma warning restore 612, 618
         }

@@ -14,7 +14,6 @@ namespace SindikatAnkete.Entity
         public DateTime VrijemeKreiranja { get; set; }
         public string Opis { get; set; }
         public bool status { get; set; }
-        public virtual ICollection<PopunjenaAnketaEntity> PopunjeneAnkete { get; set; }
         public virtual ICollection<PitanjeEntity> Pitanja { get; set; }
     }
 }
