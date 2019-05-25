@@ -10,7 +10,7 @@ using Sindikat.Ankete.Persistence;
 namespace Sindikat.Ankete.Persistence.Migrations
 {
     [DbContext(typeof(AnketeDbContext))]
-    [Migration("20190523185051_initial")]
+    [Migration("20190524135839_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,13 +52,9 @@ namespace Sindikat.Ankete.Persistence.Migrations
 
                     b.Property<int?>("PitanjeId");
 
-                    b.Property<int?>("PopunjenaAnketaId");
-
                     b.HasKey("Id");
 
                     b.HasIndex("PitanjeId");
-
-                    b.HasIndex("PopunjenaAnketaId");
 
                     b.ToTable("Odgovori");
                 });
@@ -105,14 +101,11 @@ namespace Sindikat.Ankete.Persistence.Migrations
 
             modelBuilder.Entity("SindikatAnkete.Entity.PopunjenaAnketaEntity", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<int>("AnketaId");
 
-                    b.Property<string>("KorisnikId")
-                        .IsRequired();
+                    b.Property<string>("KorisnikId");
 
-                    b.HasKey("Id");
+                    b.HasKey("AnketaId", "KorisnikId");
 
                     b.ToTable("PopunjeneAnkete");
                 });
@@ -136,10 +129,6 @@ namespace Sindikat.Ankete.Persistence.Migrations
                     b.HasOne("SindikatAnkete.Entity.PitanjeEntity", "Pitanje")
                         .WithMany("Odgovori")
                         .HasForeignKey("PitanjeId");
-
-                    b.HasOne("SindikatAnkete.Entity.PopunjenaAnketaEntity", "PopunjenaAnketa")
-                        .WithMany("Odgovori")
-                        .HasForeignKey("PopunjenaAnketaId");
                 });
 
             modelBuilder.Entity("SindikatAnkete.Entity.PitanjeEntity", b =>
@@ -158,6 +147,14 @@ namespace Sindikat.Ankete.Persistence.Migrations
                     b.HasOne("SindikatAnkete.Entity.PitanjeEntity", "Pitanje")
                         .WithMany("PonudeniOdgovori")
                         .HasForeignKey("PitanjeId");
+                });
+
+            modelBuilder.Entity("SindikatAnkete.Entity.PopunjenaAnketaEntity", b =>
+                {
+                    b.HasOne("SindikatAnkete.Entity.AnketaEntity", "Anketa")
+                        .WithMany("PopunjenaAnketa")
+                        .HasForeignKey("AnketaId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

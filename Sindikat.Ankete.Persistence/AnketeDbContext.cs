@@ -52,6 +52,8 @@ namespace Sindikat.Ankete.Persistence
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AnketeDbContext).Assembly);
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<PopunjenaAnketaEntity>().HasKey(c => new { c.AnketaId, c.KorisnikId });
+
         }
 
     }

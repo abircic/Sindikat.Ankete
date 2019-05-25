@@ -8,9 +8,9 @@ namespace SindikatAnkete.Entity
 {
     public class PopunjenaAnketaEntity
     {
-        public int Id { get; set; }
+        public int AnketaId { get; set; }
         [Required]
         public string KorisnikId { get; set; }
-        public ICollection<OdgovorEntity>Odgovori { get; set;}
+        public AnketaEntity Anketa { get; set; }
     }
 }

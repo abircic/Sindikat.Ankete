@@ -108,7 +108,7 @@ namespace Sindikat.Ankete.API.Controllers
                 else
                 {
                     p.TipPitanja.VrstaPitanja = query.VrstaPitanja;
-                    p.TipPitanja.Id = query.Id;
+                    p.TipPitanja.Id = query.Id; 
                 }
 
                 p.PonudeniOdgovori = new List<PonudeniOdgovorEntity>();
@@ -148,24 +148,34 @@ namespace Sindikat.Ankete.API.Controllers
         {
             return _context.Ankete.Any(e => e.Id == id);
         }
-        // POST: api/Anketa
-        //[HttpPost]
-        //public async void PostIspuniAnketu(IspuniAnketuDTO ispuniAnketu)
-        //{
-        //    PopunjenaAnketaEntity popunjenaAnketa = new PopunjenaAnketaEntity();
-        //    popunjenaAnketa.Anketa.Id = ispuniAnketu.AnketaId;
-        //    popunjenaAnketa.KorisnikId = ispuniAnketu.KorisnikId;
-        //    List<OdgovorEntity> listaOdgovora = new List<OdgovorEntity>();
-
-        //    foreach (var odgovor in ispuniAnketu.Odgovor)
-        //    {
-        //        var od = new OdgovorEntity();
-        //        od.OdgovorPitanja = odgovor.OdgovorNaPitanje;
 
 
-        //    }
-        //    popunjenaAnketa.Odgovori = listaOdgovora;
-        //}
+        [HttpPost("/api/[controller]/ispuni")]
+        public async Task<ActionResult<IspuniAnketuDTO>> PostAnketaEntity(IspuniAnketuDTO ispuniAnketu)
+        {
+            PopunjenaAnketaEntity popunjenaAnketa = new PopunjenaAnketaEntity();
+            popunjenaAnketa.AnketaId = ispuniAnketu.AnketaId;
+            popunjenaAnketa.KorisnikId = ispuniAnketu.KorisnikId;
+
+            List<OdgovorEntity> listaOdgovora = new List<OdgovorEntity>();
+            foreach (var odgovor in ispuniAnketu.Odgovor)
+            {
+                var odg = new OdgovorEntity();
+                odg.OdgovorPitanja = odgovor.OdgovorNaPitanje;
+                odg.Pitanje.Id = odgovor.PitanjeId;
+
+                listaOdgovora.Add(odg);
+
+            }
+            await _context.PopunjeneAnkete.AddAsync(popunjenaAnketa);
+            await _context.Odgovori.AddRangeAsync(listaOdgovora);
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Pohranjeni odgovori na anketu");
+
+
+        }
     }
 
 }

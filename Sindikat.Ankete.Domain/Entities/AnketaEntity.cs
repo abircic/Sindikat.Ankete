@@ -15,5 +15,6 @@ namespace SindikatAnkete.Entity
         public string Opis { get; set; }
         public bool status { get; set; }
         public virtual ICollection<PitanjeEntity> Pitanja { get; set; }
+        public virtual ICollection<PopunjenaAnketaEntity> PopunjenaAnketa{get; set;}
     }
 }

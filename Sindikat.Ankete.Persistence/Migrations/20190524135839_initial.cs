@@ -25,19 +25,6 @@ namespace Sindikat.Ankete.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PopunjeneAnkete",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    KorisnikId = table.Column<string>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PopunjeneAnkete", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "TipoviPitanja",
                 columns: table => new
                 {
@@ -48,6 +35,24 @@ namespace Sindikat.Ankete.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TipoviPitanja", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PopunjeneAnkete",
+                columns: table => new
+                {
+                    AnketaId = table.Column<int>(nullable: false),
+                    KorisnikId = table.Column<string>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PopunjeneAnkete", x => new { x.AnketaId, x.KorisnikId });
+                    table.ForeignKey(
+                        name: "FK_PopunjeneAnkete_Ankete_AnketaId",
+                        column: x => x.AnketaId,
+                        principalTable: "Ankete",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -84,8 +89,7 @@ namespace Sindikat.Ankete.Persistence.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     OdgovorPitanja = table.Column<string>(nullable: false),
-                    PitanjeId = table.Column<int>(nullable: true),
-                    PopunjenaAnketaId = table.Column<int>(nullable: true)
+                    PitanjeId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -94,12 +98,6 @@ namespace Sindikat.Ankete.Persistence.Migrations
                         name: "FK_Odgovori_Pitanja_PitanjeId",
                         column: x => x.PitanjeId,
                         principalTable: "Pitanja",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Odgovori_PopunjeneAnkete_PopunjenaAnketaId",
-                        column: x => x.PopunjenaAnketaId,
-                        principalTable: "PopunjeneAnkete",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -128,11 +126,6 @@ namespace Sindikat.Ankete.Persistence.Migrations
                 name: "IX_Odgovori_PitanjeId",
                 table: "Odgovori",
                 column: "PitanjeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Odgovori_PopunjenaAnketaId",
-                table: "Odgovori",
-                column: "PopunjenaAnketaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Pitanja_AnketaId",
