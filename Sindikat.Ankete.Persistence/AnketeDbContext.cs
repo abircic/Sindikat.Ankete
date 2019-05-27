@@ -53,6 +53,7 @@ namespace Sindikat.Ankete.Persistence
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<PopunjenaAnketaEntity>().HasKey(c => new { c.AnketaId, c.KorisnikId });
+            modelBuilder.Entity<OdgovorEntity>().HasKey(o => new { o.PitanjeId, o.KorisnikId});
 
         }
 

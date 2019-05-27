@@ -8,6 +8,6 @@ namespace Sindikat.Ankete.Domain.Models
     public class OdgovorDTO
     {
         public string OdgovorNaPitanje { get; set; }
-        public int PitanjeId { get; set; }
+        public int Pitanje { get; set; }
     }
 }

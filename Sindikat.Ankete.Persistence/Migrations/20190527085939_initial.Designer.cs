@@ -10,7 +10,7 @@ using Sindikat.Ankete.Persistence;
 namespace Sindikat.Ankete.Persistence.Migrations
 {
     [DbContext(typeof(AnketeDbContext))]
-    [Migration("20190524135839_initial")]
+    [Migration("20190527085939_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,18 +43,14 @@ namespace Sindikat.Ankete.Persistence.Migrations
 
             modelBuilder.Entity("SindikatAnkete.Entity.OdgovorEntity", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<int>("PitanjeId");
+
+                    b.Property<string>("KorisnikId");
 
                     b.Property<string>("OdgovorPitanja")
                         .IsRequired();
 
-                    b.Property<int?>("PitanjeId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PitanjeId");
+                    b.HasKey("PitanjeId", "KorisnikId");
 
                     b.ToTable("Odgovori");
                 });
@@ -128,7 +124,8 @@ namespace Sindikat.Ankete.Persistence.Migrations
                 {
                     b.HasOne("SindikatAnkete.Entity.PitanjeEntity", "Pitanje")
                         .WithMany("Odgovori")
-                        .HasForeignKey("PitanjeId");
+                        .HasForeignKey("PitanjeId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("SindikatAnkete.Entity.PitanjeEntity", b =>

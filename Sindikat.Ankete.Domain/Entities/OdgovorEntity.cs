@@ -8,9 +8,10 @@ namespace SindikatAnkete.Entity
 {
     public class OdgovorEntity
     {
-        public int Id { get; set; }
+        public int PitanjeId { get; set; }
         [Required]
         public string OdgovorPitanja { get; set; }
         public PitanjeEntity Pitanje { get; set; }
+        public string KorisnikId { get; set; }
     }
 }

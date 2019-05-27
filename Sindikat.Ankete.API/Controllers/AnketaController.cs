@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using SindikatAnkete.Entity;
 
 namespace Sindikat.Ankete.API.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class AnketaController : ControllerBase
@@ -31,7 +33,8 @@ namespace Sindikat.Ankete.API.Controllers
         [HttpGet]
         public IQueryable<AnketaMenuDTO> GetAnkete()
         {
-            var anketa = from a in _context.Ankete where a.status.Equals(true)
+            var anketa = from a in _context.Ankete
+                         where a.status.Equals(true)
                          select new AnketaMenuDTO()
                          {
                              Id = a.Id,
@@ -53,16 +56,6 @@ namespace Sindikat.Ankete.API.Controllers
                     .ThenInclude(pitanje => pitanje.PonudeniOdgovori)
                     .SingleOrDefault(anketa => anketa.Id == id);
 
-            //var query = from a in _context.Ankete
-            //            where a.Id == id
-            //            join p in _context.Pitanja on a.Id equals p.Anketa.Id
-            //            join o in _context.PonudeniOdgovori on p.Id equals o.Pitanje.Id
-            //            select new { a.Id, a.Naziv, a.Opis, p.TekstPitanja, o.Pitanje.PonudeniOdgovori };
-            ////            select new { a.Id, a.Naziv, a.Opis, p.TekstPitanja, p.PonudeniOdgovori};
-            //           select new { a.Id, a.Naziv, a.Opis, p.TekstPitanja, o.Pitanje.PonudeniOdgovori};
-            //var query = _context.Ankete.Where(a => a.Id == id).Include(p => p.Pitanja);
-
-          
 
             if (query == null)
             {
@@ -78,6 +71,7 @@ namespace Sindikat.Ankete.API.Controllers
         public async Task<IActionResult> PutAnketaEntity(int id, bool status)
         {
             var result = await _context.Ankete.FindAsync(id);
+
             result.status = status;
             _context.Ankete.Update(result);
             _context.SaveChanges();
@@ -85,6 +79,7 @@ namespace Sindikat.Ankete.API.Controllers
         }
 
         // POST: api/Anketa
+        //[Authorize(Policy = "StvoriAnketu")]
         [HttpPost]
         public async Task<ActionResult<AnketaEntity>> PostAnketaEntity(AnketaDTO anketaDTO)
         {
@@ -99,18 +94,17 @@ namespace Sindikat.Ankete.API.Controllers
                 var p = new PitanjeEntity();
                 p.TekstPitanja = pitanje.TekstPitanja;
                 p.TipPitanja = new TipPitanjaEntity();
-
                 var query = _context.TipoviPitanja.SingleOrDefault(tip => tip.VrstaPitanja == pitanje.VrstaPitanja);
-                if(query==null)
+                if (query == null)
                 {
                     p.TipPitanja.VrstaPitanja = pitanje.VrstaPitanja;
                 }
                 else
                 {
                     p.TipPitanja.VrstaPitanja = query.VrstaPitanja;
-                    p.TipPitanja.Id = query.Id; 
+                    p.TipPitanja.Id = query.Id;
                 }
-
+                //p.TipPitanja.VrstaPitanja = pitanje.VrstaPitanja;
                 p.PonudeniOdgovori = new List<PonudeniOdgovorEntity>();
                 foreach (var odgovor in pitanje.ponudeniOdgovori)
                 {
@@ -148,34 +142,37 @@ namespace Sindikat.Ankete.API.Controllers
         {
             return _context.Ankete.Any(e => e.Id == id);
         }
-
-
+        //[Authorize(Policy = "IspuniAnketu")]
         [HttpPost("/api/[controller]/ispuni")]
         public async Task<ActionResult<IspuniAnketuDTO>> PostAnketaEntity(IspuniAnketuDTO ispuniAnketu)
         {
             PopunjenaAnketaEntity popunjenaAnketa = new PopunjenaAnketaEntity();
             popunjenaAnketa.AnketaId = ispuniAnketu.AnketaId;
             popunjenaAnketa.KorisnikId = ispuniAnketu.KorisnikId;
+            var anketa = _context.Ankete.Where(a => a.Id == ispuniAnketu.AnketaId).SingleOrDefault();
+            popunjenaAnketa.Anketa = anketa;
+
 
             List<OdgovorEntity> listaOdgovora = new List<OdgovorEntity>();
-            foreach (var odgovor in ispuniAnketu.Odgovor)
+            foreach(var odgovor in ispuniAnketu.Odgovor)
             {
                 var odg = new OdgovorEntity();
                 odg.OdgovorPitanja = odgovor.OdgovorNaPitanje;
-                odg.Pitanje.Id = odgovor.PitanjeId;
-
+                odg.KorisnikId = ispuniAnketu.KorisnikId;
+                odg.PitanjeId = odgovor.Pitanje;
                 listaOdgovora.Add(odg);
-
             }
+
+            
             await _context.PopunjeneAnkete.AddAsync(popunjenaAnketa);
             await _context.Odgovori.AddRangeAsync(listaOdgovora);
-
             await _context.SaveChangesAsync();
+
+ 
 
             return Ok("Pohranjeni odgovori na anketu");
 
 
         }
     }
-
 }

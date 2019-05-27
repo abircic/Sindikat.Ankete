@@ -80,6 +80,13 @@ namespace Sindikat.Ankete.API
                 c.SwaggerDoc("SindikatAnkete", new Info { Title = "SINDIKAT ANKETE", Version = "v1" });
             });
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("StvoriAnketu", policy => policy.RequireClaim("CreateSurvey"));
+                options.AddPolicy("IspuniAnketu", policy => policy.RequireClaim("TakeSurvey"));
+                options.AddPolicy("Rezultati", policy => policy.RequireClaim("ViewSurveyResults"));
+            });
+
             builder.Populate(services);
             builder.RegisterModule(new InfrastructureModule());
             builder.RegisterModule(new PersistenceModule());

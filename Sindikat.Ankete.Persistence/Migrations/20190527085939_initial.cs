@@ -86,20 +86,19 @@ namespace Sindikat.Ankete.Persistence.Migrations
                 name: "Odgovori",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    OdgovorPitanja = table.Column<string>(nullable: false),
-                    PitanjeId = table.Column<int>(nullable: true)
+                    PitanjeId = table.Column<int>(nullable: false),
+                    KorisnikId = table.Column<string>(nullable: false),
+                    OdgovorPitanja = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Odgovori", x => x.Id);
+                    table.PrimaryKey("PK_Odgovori", x => new { x.PitanjeId, x.KorisnikId });
                     table.ForeignKey(
                         name: "FK_Odgovori_Pitanja_PitanjeId",
                         column: x => x.PitanjeId,
                         principalTable: "Pitanja",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -121,11 +120,6 @@ namespace Sindikat.Ankete.Persistence.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Odgovori_PitanjeId",
-                table: "Odgovori",
-                column: "PitanjeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Pitanja_AnketaId",
