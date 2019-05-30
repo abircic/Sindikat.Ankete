@@ -10,7 +10,7 @@ using Sindikat.Ankete.Persistence;
 namespace Sindikat.Ankete.Persistence.Migrations
 {
     [DbContext(typeof(AnketeDbContext))]
-    [Migration("20190527085939_initial")]
+    [Migration("20190530054352_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

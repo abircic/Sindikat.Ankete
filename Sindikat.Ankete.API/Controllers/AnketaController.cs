@@ -24,12 +24,6 @@ namespace Sindikat.Ankete.API.Controllers
             _context = context;
         }
 
-        //// GET: api/Anketa
-        //[HttpGet]
-        //public async Task<ActionResult<IEnumerable<AnketaEntity>>> GetAnkete()
-        //{
-        //    return await _context.Ankete.ToListAsync();
-        //}
         [HttpGet]
         public IQueryable<AnketaMenuDTO> GetAnkete()
         {

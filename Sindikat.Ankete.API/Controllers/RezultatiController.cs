@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using SindikatAnkete.Entity;
 
 namespace Sindikat.Ankete.API.Controllers
 {
+    //[Authorize(Policy = "Rezultati")]
     [Route("api/[controller]")]
     [ApiController]
     public class RezultatiController : ControllerBase
@@ -22,20 +24,15 @@ namespace Sindikat.Ankete.API.Controllers
         }
 
         // GET: api/Rezultati
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<PopunjenaAnketaEntity>>> GetPopunjeneAnkete()
+        [HttpGet("BrojUkupnoPopunjenihAnketa")]
+        public async Task<ActionResult<IEnumerable<PopunjenaAnketaEntity>>> UkupanBrojAnketa()
         {
-            //var query = from p in _context.PopunjeneAnkete
-            //            group p by p.KorisnikId into Group
-            //            orderby Group.Key
-            //            select Group;
-            
-            var query = from p in _context.PopunjeneAnkete
-                        orderby p.KorisnikId
-                        group p by p.KorisnikId into grp
+          var query = from p in _context.PopunjeneAnkete
+                        orderby p.AnketaId
+                        group p by p.AnketaId into grp
                         select new
                         {
-                            korisnik = grp.Key,
+                            AnketaId = grp.Key,
                             Broj_anketa = grp.Count()
                         };
 
@@ -44,9 +41,60 @@ namespace Sindikat.Ankete.API.Controllers
             return Ok(query);
         }
 
+        [HttpGet("BrojUkupnoPopunjenihAnketaPoId/{id}")]
+        public async Task<ActionResult<IEnumerable<PopunjenaAnketaEntity>>> UkupanBrojAnketaId(int id)
+        {
+            var query = from p in _context.PopunjeneAnkete
+                        orderby p.AnketaId
+                        where p.AnketaId == id
+                        group p by p.AnketaId into grp
+                        select new
+                        {
+                            AnketaId = grp.Key,
+                            Broj_anketa = grp.Count()
+                        };
+
+
+
+            return Ok(query);
+        }
+
+        [HttpGet("/api/[controller]/ObradaAnkete/{id}")]
+        public async Task<ActionResult<PopunjenaAnketaEntity>> ObradaAnkete(int id)
+        {
+            var query2 = from p in _context.Odgovori
+                         orderby p.PitanjeId
+                         group p by p.PitanjeId into grp
+                         select new
+                         {
+                             id = grp.Key,
+                             pitanje = grp.Count()
+                         };
+
+            var query = from o in _context.Odgovori
+                        join p in _context.Pitanja on o.PitanjeId equals p.Id
+                        from q in query2
+                        where o.PitanjeId == q.id && p.Anketa.Id==id
+                        orderby o.PitanjeId
+                        group o by new { o.OdgovorPitanja, o.PitanjeId, q.pitanje} into grp
+                        select new
+                        {
+                            idAnkete = id,
+                            idPitanje = grp.Key.PitanjeId,
+                            odgovor = grp.Key.OdgovorPitanja,
+                            broj_odgovora = grp.Count(),
+                            brojodgovoranapitanje = grp.Key.pitanje,
+                            postotak = (((float)grp.Count())/((float)(grp.Key.pitanje)))*100+"%"
+
+
+                        };
+           
+            return Ok(query);
+        }
+
         // GET: api/Rezultati/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<PopunjenaAnketaEntity>> GetPopunjenaAnketaEntity(int id)
+        [HttpGet("BrojPopunjenihAnketaZaIdKorisnika/{id}")]
+        public async Task<ActionResult<PopunjenaAnketaEntity>> BrojAnketaZaOdredenogKorisnika(int id)
         {
             var query = from p in _context.PopunjeneAnkete
                         where p.KorisnikId==id.ToString()
@@ -62,10 +110,7 @@ namespace Sindikat.Ankete.API.Controllers
             return Ok(query);
 
         }
-        //var query = _context.Ankete
-        //       .Include(anketa => anketa.Pitanja)
-        //           .ThenInclude(pitanje => pitanje.PonudeniOdgovori)
-        //           .SingleOrDefault(anketa => anketa.Id == id);
+     
 
 
         [HttpGet("/api/[controller]/{idAnkete}/{idPitanja}/{odgovor}")]
@@ -82,94 +127,8 @@ namespace Sindikat.Ankete.API.Controllers
                             Broj_odgovora = grp.Count()
 
                         };
-            
-
+                           
             return Ok(query);
-        }
-
-        [HttpGet("/api/[controller]/BrojAnketa/{idAnkete}")]
-        public async Task<ActionResult<PopunjenaAnketaEntity>> GetUkupanBrojAnketa(int idAnkete)
-        {
-            var query = from p in _context.PopunjeneAnkete
-                        where p.AnketaId == idAnkete
-                        orderby p.AnketaId
-                        group p by p.AnketaId into grp
-                        select new
-                        {
-                            AnketaId = grp.Key,
-                            Broj_popunjenih_anketa = grp.Count()
-
-                        };
-            return Ok(query);
-        }
-        // PUT: api/Rezultati/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPopunjenaAnketaEntity(int id, PopunjenaAnketaEntity popunjenaAnketaEntity)
-        {
-            if (id != popunjenaAnketaEntity.AnketaId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(popunjenaAnketaEntity).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PopunjenaAnketaEntityExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Rezultati
-        [HttpPost]
-        public async Task<ActionResult<PopunjenaAnketaEntity>> PostPopunjenaAnketaEntity(PopunjenaAnketaEntity popunjenaAnketaEntity)
-        {
-            _context.PopunjeneAnkete.Add(popunjenaAnketaEntity);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (PopunjenaAnketaEntityExists(popunjenaAnketaEntity.AnketaId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtAction("GetPopunjenaAnketaEntity", new { id = popunjenaAnketaEntity.AnketaId }, popunjenaAnketaEntity);
-        }
-
-        // DELETE: api/Rezultati/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<PopunjenaAnketaEntity>> DeletePopunjenaAnketaEntity(int id)
-        {
-            var popunjenaAnketaEntity = await _context.PopunjeneAnkete.FindAsync(id);
-            if (popunjenaAnketaEntity == null)
-            {
-                return NotFound();
-            }
-
-            _context.PopunjeneAnkete.Remove(popunjenaAnketaEntity);
-            await _context.SaveChangesAsync();
-
-            return popunjenaAnketaEntity;
         }
 
         private bool PopunjenaAnketaEntityExists(int id)
