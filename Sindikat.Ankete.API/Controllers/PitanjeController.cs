@@ -36,7 +36,8 @@ namespace Sindikat.Ankete.API.Controllers
                          select new PitanjeDTO()
                          {
                              TekstPitanja = p.TekstPitanja,
-                             VrstaPitanja = p.TipPitanja.VrstaPitanja
+                             VrstaPitanja = p.TipPitanja.VrstaPitanja,
+                             
                          };
             return pitanje;
         }
