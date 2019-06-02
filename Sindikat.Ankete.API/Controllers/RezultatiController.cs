@@ -83,7 +83,7 @@ namespace Sindikat.Ankete.API.Controllers
                             idPitanje = grp.Key.PitanjeId,
                             odgovor = grp.Key.OdgovorPitanja,
                             broj_odgovora = grp.Count(),
-                            brojodgovoranapitanje = grp.Key.pitanje,
+                            broj_ukupnih_odgovora_na_pitanje = grp.Key.pitanje,
                             postotak = ((((float)grp.Count())/((float)(grp.Key.pitanje)))*100).ToString("0.00") + "%"
 
 
@@ -103,18 +103,45 @@ namespace Sindikat.Ankete.API.Controllers
                         select new
                         {
                             korisnik = grp.Key,
-                            Broj_anketa = grp.Count()
+                            Broj_popunjenih_anketa_korisnika = grp.Count()
                         };
 
 
             return Ok(query);
 
         }
-     
 
+        [HttpGet("ObradaAnketePoPitanju/{idAnkete}/{idPitanja}")]
+        public async Task<ActionResult<PopunjenaAnketaEntity>> RezultatPitanjaPoPitanju(int idAnkete, int idPitanja)
+        {
+            var query2 = from o in _context.Odgovori
+                         orderby o.PitanjeId
+                         where o.Pitanje.Anketa.Id == idAnkete && o.PitanjeId == idPitanja
+                         group o by o.PitanjeId into grp
+                         select new
+                         {
+                             id = grp.Key,
+                             pitanje = grp.Count()
+                         };
+            var query = from o in _context.Odgovori
+                        join p in _context.Pitanja on o.PitanjeId equals p.Id
+                        join a in _context.Ankete on p.Anketa.Id equals a.Id
+                        from q in query2
+                        where o.PitanjeId == idPitanja && p.Anketa.Id == idAnkete
+                        group o by new { o.OdgovorPitanja, q.pitanje } into grp
+                        select new
+                        {
+                            Odgovor = grp.Key.OdgovorPitanja,
+                            Broj_odgovora = grp.Count(),
+                            broj_ukupnih_odgovora_na_pitanje = grp.Key.pitanje,
+                            postotak = ((((float)grp.Count()) / ((float)(grp.Key.pitanje))) * 100).ToString("0.00") + "%"
+                        };
 
-        [HttpGet("/api/[controller]/{idAnkete}/{idPitanja}/{odgovor}")]
-        public async Task<ActionResult<PopunjenaAnketaEntity>> GetRezultatPitanja(int idAnkete, int idPitanja, string odgovor)
+            return Ok(query);
+        }
+
+        [HttpGet("ObradaAnketePoOdgovoru/{idAnkete}/{idPitanja}/{odgovor}")]
+        public async Task<ActionResult<PopunjenaAnketaEntity>> RezultatPitanjaPoOdgovoru(int idAnkete, int idPitanja, string odgovor)
         {
             var query2 = from o in _context.Odgovori
                          orderby o.PitanjeId
@@ -135,7 +162,7 @@ namespace Sindikat.Ankete.API.Controllers
                         {
                             Odgovor = grp.Key.OdgovorPitanja,
                             Broj_odgovora = grp.Count(),
-                            broj_odgovora_na_pitanje=grp.Key.pitanje,
+                            broj_ukupnih_odgovora_na_pitanje=grp.Key.pitanje,
                             postotak = ((((float)grp.Count()) / ((float)(grp.Key.pitanje))) * 100).ToString("0.00") + "%"
                         };
                            
