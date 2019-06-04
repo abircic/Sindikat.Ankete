@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +14,10 @@ using SindikatAnkete.Entity;
 
 namespace Sindikat.Ankete.API.Controllers
 {
-
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
+
     public class AnketaController : ControllerBase
     {
         private readonly AnketeDbContext _context;
@@ -23,7 +26,7 @@ namespace Sindikat.Ankete.API.Controllers
         {
             _context = context;
         }
-
+        [Authorize(Policy = "IspuniAnketu")]
         [HttpGet]
         public IQueryable<AnketaMenuDTO> GetAnkete()
         {
@@ -40,6 +43,7 @@ namespace Sindikat.Ankete.API.Controllers
         }
 
         // GET: api/Anketa/5
+        [Authorize(Policy = "IspuniAnketu")]
         [HttpGet("{id}")]
         public async Task<ActionResult<AnketaEntity>> GetAnketaEntity(int id)
         {
@@ -61,6 +65,7 @@ namespace Sindikat.Ankete.API.Controllers
 
 
         // PUT: api/Anketa/5
+        [Authorize(Policy = "StvoriAnketu")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAnketaEntity(int id, bool status)
         {
@@ -73,10 +78,11 @@ namespace Sindikat.Ankete.API.Controllers
         }
 
         // POST: api/Anketa
-        //[Authorize(Policy = "StvoriAnketu")]
+        [Authorize(Policy = "StvoriAnketu")]
         [HttpPost]
         public async Task<ActionResult<AnketaEntity>> PostAnketaEntity(AnketaDTO anketaDTO)
         {
+            
             AnketaEntity anketa = new AnketaEntity();
             anketa.status = true;
             anketa.Naziv = anketaDTO.Naziv;
@@ -117,6 +123,7 @@ namespace Sindikat.Ankete.API.Controllers
         }
 
         // DELETE: api/Anketa/5
+        [Authorize(Policy = "StvoriAnketu")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<AnketaEntity>> DeleteAnketaEntity(int id)
         {
@@ -136,13 +143,13 @@ namespace Sindikat.Ankete.API.Controllers
         {
             return _context.Ankete.Any(e => e.Id == id);
         }
-        //[Authorize(Policy = "IspuniAnketu")]
+        [Authorize(Policy = "IspuniAnketu")]
         [HttpPost("/api/[controller]/ispuni")]
         public async Task<ActionResult<IspuniAnketuDTO>> PostAnketaEntity(IspuniAnketuDTO ispuniAnketu)
         {
             PopunjenaAnketaEntity popunjenaAnketa = new PopunjenaAnketaEntity();
             popunjenaAnketa.AnketaId = ispuniAnketu.AnketaId;
-            popunjenaAnketa.KorisnikId = ispuniAnketu.KorisnikId;
+            popunjenaAnketa.KorisnikId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var anketa = _context.Ankete.Where(a => a.Id == ispuniAnketu.AnketaId).SingleOrDefault();
             popunjenaAnketa.Anketa = anketa;
 
@@ -152,7 +159,7 @@ namespace Sindikat.Ankete.API.Controllers
             {
                 var odg = new OdgovorEntity();
                 odg.OdgovorPitanja = odgovor.OdgovorNaPitanje;
-                odg.KorisnikId = ispuniAnketu.KorisnikId;
+                odg.KorisnikId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 odg.PitanjeId = odgovor.Pitanje;
                 listaOdgovora.Add(odg);
             }

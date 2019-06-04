@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace Sindikat.Ankete.API
 {
@@ -40,6 +41,21 @@ namespace Sindikat.Ankete.API
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             var builder = new ContainerBuilder();
+
+            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("SOME_RANDOM_KEY_DO_NOT_SHARE"));
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+                ValidateIssuer = true,
+                ValidIssuer = "http://localhost",
+                ValidateAudience = true,
+                ValidAudience = "http://localhost",
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = signingKey,
+                RequireExpirationTime = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
 
             services.AddDbContext<Persistence.AnketeDbContext>(options =>
             {
@@ -70,15 +86,23 @@ namespace Sindikat.Ankete.API
                         ClockSkew = TimeSpan.Zero // remove delay of token when expire
                     };
                 });
+            //.AddJwtBearer(configureOptions =>
+            // {
+
+            //     configureOptions.RequireHttpsMetadata = false;
+            //     configureOptions.ClaimsIssuer = "http://localhost";
+            //     configureOptions.TokenValidationParameters = tokenValidationParameters;
+            //     configureOptions.SaveToken = true;
+            // });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddMvc().AddJsonOptions(Options => 
             Options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("SindikatAnkete", new Info { Title = "SINDIKAT ANKETE", Version = "v1" });
-            });
+            services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new Info { Title = "Sindikat.Identity API", Version = "v1" });
+            var security = new Dictionary<string, IEnumerable<string>> { { "Bearer", new string[] { } }, }; c.AddSecurityDefinition("Bearer", 
+            new ApiKeyScheme { Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+            Name = "Authorization", In = "header", Type = "apiKey" }); c.AddSecurityRequirement(security); });
 
             services.AddAuthorization(options =>
             {
@@ -100,10 +124,9 @@ namespace Sindikat.Ankete.API
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/SindikatAnkete/swagger.json", "Not enabled");
-            });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sindikat.Identity API");
+            c.DocumentTitle = "Title Documentation";
+            c.DocExpansion(DocExpansion.None); });
 
             if (env.IsDevelopment())
             {

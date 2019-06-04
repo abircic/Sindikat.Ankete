@@ -8,7 +8,6 @@ namespace Sindikat.Ankete.Domain.Models
     public class IspuniAnketuDTO
     {
         public int AnketaId { get; set; }
-        public string KorisnikId { get; set; }
         public virtual ICollection<OdgovorDTO> Odgovor { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -11,9 +12,10 @@ using SindikatAnkete.Entity;
 
 namespace Sindikat.Ankete.API.Controllers
 {
-    //[Authorize(Policy = "Rezultati")]
+    
     [Route("api/[controller]")]
     [ApiController]
+    
     public class RezultatiController : ControllerBase
     {
         private readonly AnketeDbContext _context;
@@ -22,8 +24,50 @@ namespace Sindikat.Ankete.API.Controllers
         {
             _context = context;
         }
+        [Authorize(Policy = "IspuniAnketu")]
+        [HttpGet("/api/[controller]/ObradaAnketeUlogiranogKorisnika")]
+        public async Task<ActionResult<PopunjenaAnketaEntity>> ObradaAnketeUlogiranogKorisnika()
+        {
+            var KorisnikId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+            var query = from o in _context.Odgovori
+                        join p in _context.Pitanja on o.PitanjeId equals p.Id
+                        join a in _context.Ankete on p.Anketa.Id equals a.Id
+                        where o.KorisnikId == KorisnikId
+                        orderby o.PitanjeId
+                        group o by new { a.Id, o.OdgovorPitanja, o.PitanjeId, p.TekstPitanja } into grp
+                        select new
+                        {
+                            AnketaId = grp.Key.Id,
+                            idPitanje = grp.Key.PitanjeId,
+                            tekst_pitanja = grp.Key.TekstPitanja,
+                            odgovor = grp.Key.OdgovorPitanja
+                        };
+
+            return Ok(query);
+        }
+        // GET: api/Rezultati/5
+        [Authorize(Policy = "IspuniAnketu")]
+        [HttpGet("BrojPopunjenihAnketaZaUlogiranogKorisnika")]
+        public async Task<ActionResult<PopunjenaAnketaEntity>> BrojAnketaZaUlogiranogKorisnika()
+        {
+            string KorisnikId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var query = from p in _context.PopunjeneAnkete
+                        where p.KorisnikId == KorisnikId
+                        orderby p.KorisnikId
+                        group p by p.KorisnikId into grp
+                        select new
+                        {
+                            korisnik = grp.Key,
+                            Broj_popunjenih_anketa_korisnika = grp.Count()
+                        };
+
+
+            return Ok(query);
+
+        }
         // GET: api/Rezultati
+        [Authorize(Policy = "Rezultati")]
         [HttpGet("BrojUkupnoPopunjenihAnketa")]
         public async Task<ActionResult<IEnumerable<PopunjenaAnketaEntity>>> UkupanBrojAnketa()
         {
@@ -40,7 +84,7 @@ namespace Sindikat.Ankete.API.Controllers
 
             return Ok(query);
         }
-
+        [Authorize(Policy = "Rezultati")]
         [HttpGet("BrojUkupnoPopunjenihAnketaPoId/{id}")]
         public async Task<ActionResult<IEnumerable<PopunjenaAnketaEntity>>> UkupanBrojAnketaId(int id)
         {
@@ -58,7 +102,7 @@ namespace Sindikat.Ankete.API.Controllers
 
             return Ok(query);
         }
-
+        [Authorize(Policy = "Rezultati")]
         [HttpGet("/api/[controller]/ObradaAnkete/{id}")]
         public async Task<ActionResult<PopunjenaAnketaEntity>> ObradaAnkete(int id)
         {
@@ -92,9 +136,11 @@ namespace Sindikat.Ankete.API.Controllers
             return Ok(query);
         }
 
+       
         // GET: api/Rezultati/5
+        [Authorize(Policy = "Rezultati")]
         [HttpGet("BrojPopunjenihAnketaZaIdKorisnika/{id}")]
-        public async Task<ActionResult<PopunjenaAnketaEntity>> BrojAnketaZaOdredenogKorisnika(int id)
+        public async Task<ActionResult<PopunjenaAnketaEntity>> BrojAnketaZaOdredenogKorisnikaAdmin(int id)
         {
             var query = from p in _context.PopunjeneAnkete
                         where p.KorisnikId==id.ToString()
@@ -110,7 +156,8 @@ namespace Sindikat.Ankete.API.Controllers
             return Ok(query);
 
         }
-
+        
+        [Authorize(Policy = "Rezultati")]
         [HttpGet("ObradaAnketePoPitanju/{idAnkete}/{idPitanja}")]
         public async Task<ActionResult<PopunjenaAnketaEntity>> RezultatPitanjaPoPitanju(int idAnkete, int idPitanja)
         {
@@ -139,7 +186,7 @@ namespace Sindikat.Ankete.API.Controllers
 
             return Ok(query);
         }
-
+        [Authorize(Policy = "Rezultati")]
         [HttpGet("ObradaAnketePoOdgovoru/{idAnkete}/{idPitanja}/{odgovor}")]
         public async Task<ActionResult<PopunjenaAnketaEntity>> RezultatPitanjaPoOdgovoru(int idAnkete, int idPitanja, string odgovor)
         {

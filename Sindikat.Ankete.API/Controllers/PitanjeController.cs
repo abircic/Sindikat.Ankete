@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Sindikat.Ankete.Persistence;
 using SindikatAnkete.Entity;
 using Sindikat.Ankete.Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Sindikat.Ankete.API.Controllers
 {
+    [Authorize(Policy = "StvoriAnketu")]
     [Route("api/[controller]")]
     [ApiController]
     public class PitanjeController : ControllerBase
@@ -29,6 +31,7 @@ namespace Sindikat.Ankete.API.Controllers
         //    return await _context.Pitanja.ToListAsync();
         //}
 
+        [Authorize(Policy = "StvoriAnketu")]
         [HttpGet]
         public IQueryable<PitanjeDTO> GetPitanja()
         {
@@ -45,6 +48,7 @@ namespace Sindikat.Ankete.API.Controllers
 
 
         // GET: api/Pitanje/5
+        [Authorize(Policy = "StvoriAnketu")]
         [HttpGet("{id}")]
         public async Task<ActionResult<PitanjeEntity>> GetPitanjeEntity(int id)
         {
@@ -68,6 +72,7 @@ namespace Sindikat.Ankete.API.Controllers
         }
 
         // PUT: api/Pitanje/5
+        [Authorize(Policy = "StvoriAnketu")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPitanjeEntity(int id, PitanjeEntity pitanjeEntity)
         {
@@ -79,6 +84,7 @@ namespace Sindikat.Ankete.API.Controllers
         }
 
         // POST: api/Pitanje
+        [Authorize(Policy = "StvoriAnketu")]
         [HttpPost]
         public async Task<ActionResult<PitanjeEntity>> PostPitanjeEntity(PitanjeEntity pitanjeEntity)
         {
@@ -89,6 +95,7 @@ namespace Sindikat.Ankete.API.Controllers
         }
 
         // DELETE: api/Pitanje/5
+        [Authorize(Policy = "StvoriAnketu")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<PitanjeEntity>> DeletePitanjeEntity(int id)
         {
