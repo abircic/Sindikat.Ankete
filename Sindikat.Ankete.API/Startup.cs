@@ -42,20 +42,7 @@ namespace Sindikat.Ankete.API
         {
             var builder = new ContainerBuilder();
 
-            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("SOME_RANDOM_KEY_DO_NOT_SHARE"));
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
-                ValidateIssuer = true,
-                ValidIssuer = "http://localhost",
-                ValidateAudience = true,
-                ValidAudience = "http://localhost",
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = signingKey,
-                RequireExpirationTime = false,
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
-            };
+           
 
             services.AddDbContext<Persistence.AnketeDbContext>(options =>
             {
