@@ -99,10 +99,28 @@ namespace Sindikat.Ankete.API
             services.AddMvc().AddJsonOptions(Options => 
             Options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
-            services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new Info { Title = "Sindikat.Identity API", Version = "v1" });
-            var security = new Dictionary<string, IEnumerable<string>> { { "Bearer", new string[] { } }, }; c.AddSecurityDefinition("Bearer", 
-            new ApiKeyScheme { Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-            Name = "Authorization", In = "header", Type = "apiKey" }); c.AddSecurityRequirement(security); });
+            services.AddSwaggerGen(c => 
+            {
+                c.SwaggerDoc("v1", new Info
+                {
+                    Title = "Sindikat.Identity API", Version = "v1"
+                });
+            var security = new Dictionary<string, IEnumerable<string>>
+            {
+                {
+                    "Bearer", new string[]
+                    {
+                    }
+                },
+            };
+                c.AddSecurityDefinition("Bearer", 
+            new ApiKeyScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+            Name = "Authorization", In = "header", Type = "apiKey"
+            });
+                c.AddSecurityRequirement(security);
+            });
 
             services.AddAuthorization(options =>
             {

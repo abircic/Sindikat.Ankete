@@ -55,11 +55,11 @@ namespace Sindikat.Ankete.API.Controllers
             var query = from p in _context.PopunjeneAnkete
                         where p.KorisnikId == KorisnikId
                         orderby p.KorisnikId
-                        group p by p.KorisnikId into grp
+                        group p by new { p.KorisnikId, p.AnketaId } into grp
                         select new
                         {
-                            korisnik = grp.Key,
-                            Broj_popunjenih_anketa_korisnika = grp.Count()
+                            korisnik = grp.Key.KorisnikId,
+                            anketaId = grp.Key.AnketaId
                         };
 
 
@@ -145,11 +145,11 @@ namespace Sindikat.Ankete.API.Controllers
             var query = from p in _context.PopunjeneAnkete
                         where p.KorisnikId==id.ToString()
                         orderby p.KorisnikId
-                        group p by p.KorisnikId into grp
+                        group p by new { p.KorisnikId, p.AnketaId } into grp
                         select new
                         {
-                            korisnik = grp.Key,
-                            Broj_popunjenih_anketa_korisnika = grp.Count()
+                            anketaId = grp.Key.AnketaId,
+                            korisnik = grp.Key.KorisnikId
                         };
 
 
