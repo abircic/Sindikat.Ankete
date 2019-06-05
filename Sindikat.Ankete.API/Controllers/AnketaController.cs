@@ -27,7 +27,7 @@ namespace Sindikat.Ankete.API.Controllers
         }
         [Authorize(Policy = "IspuniAnketu")]
         [HttpGet]
-        public IQueryable<AnketaMenuDTO> GetAnkete()
+        public async Task<ActionResult<AnketaMenuDTO>> GetAnkete()
         {
             var anketa = from a in _context.Ankete
                          where a.status.Equals(true)
@@ -38,7 +38,7 @@ namespace Sindikat.Ankete.API.Controllers
                              Opis = a.Opis,
                              VrijemeKreiranja = a.VrijemeKreiranja
                          };
-            return anketa;
+            return Ok(anketa);
         }
 
         // GET: api/Anketa/5
